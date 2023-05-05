@@ -1,0 +1,77 @@
+name: MacOS
+on: [ push, pull_request ]
+
+env:
+  REPO: template-cpp
+  GITHUB_REPO: Kubaaa96/template-cpp
+
+jobs:
+  linux:
+    name: MacOS 12
+    runs-on: macos-12
+    strategy:
+      matrix:
+        CONFIG:
+          - {
+            BUILD_TYPE: Debug,
+            CC: gcc-12,
+            CXX: g++-12
+          }
+          - {
+            BUILD_TYPE: Release,
+            CC: gcc-12,
+            CXX: g++-12
+          }
+          - {
+            BUILD_TYPE: Debug,
+            CC: $(brew --prefix llvm@15)/bin/clang,
+            CXX: $(brew --prefix llvm@15)/bin/clang++
+          }
+          - {
+            BUILD_TYPE: Release,
+            CC: $(brew --prefix llvm@15)/bin/clang,
+            CXX: $(brew --prefix llvm@15)/bin/clang++
+          }
+    steps:
+      - name: Install Dependencies
+        run: pip3 install conan==1.59.0 gcovr
+
+      - name: Clone the git repo
+        uses: actions/checkout@v2
+        with:
+          path: project
+          fetch-depth: 50
+
+      - name: Create project build directory
+        working-directory: project
+        run: |
+          mkdir build
+
+      - name: Configure project
+        working-directory: project
+        run: cmake -Bbuild
+          -DCMAKE_BUILD_TYPE="${{ matrix.CONFIG.BUILD_TYPE }}"
+          -DCMAKE_C_COMPILER="${{ matrix.CONFIG.CC }}"
+          -DCMAKE_CXX_COMPILER="${{ matrix.CONFIG.CXX }}" .
+
+      - name: Build project
+        working-directory: project
+        run: cmake --build ./build --config ${{ matrix.CONFIG.BUILD_TYPE }}  -- -j $(nproc --all)
+
+      - name: Run tests
+        working-directory: project/build
+        run:           
+          if [ "${{ matrix.CONFIG.BUILD_TYPE }}" == "Debug" ]; then 
+           cd tests && ctest -C ${{ matrix.CONFIG.BUILD_TYPE }} --output-on-failure --timeout 540;
+          else
+            echo "No test on Release Build type";
+          fi
+
+      - name: Basic Coverage
+        working-directory: project
+        run:
+          if [ "${{ matrix.CONFIG.CC }}" == "gcc-12" ] && [ "${{matrix.CONFIG.BUILD_TYPE}}" == "Debug" ]; then    
+            gcovr -r . -f src/ -f include/ -e tests/ --exclude-throw-branches --exclude-unreachable-branches;
+          else
+            echo "No coverage for anything different than GCC";
+          fi
