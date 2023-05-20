@@ -14,6 +14,7 @@ IF(DOXYGEN_FOUND AND USE_DOXYGEN)
 
     doxygen_add_docs(doxygen-docs ALL ${PROJECT_SOURCE_DIR}
             COMMENT "Generating documentation - entry file: ${CMAKE_CURRENT_BINARY_DIR}/html/index.html")
+    
     add_custom_command(TARGET doxygen-docs POST_BUILD
             COMMAND cp -R ${CMAKE_CURRENT_BINARY_DIR}/html ${CMAKE_SOURCE_DIR})
 endif()
