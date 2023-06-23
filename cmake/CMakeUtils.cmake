@@ -11,14 +11,6 @@ function(create_test TESTNAME)
 
 endfunction()
 
-function(create_qt_test TESTNAME)
-    cmake_parse_arguments(ARGS "" "" "SOURCES;DEPENDS" ${ARGN})
-    add_executable(${TESTNAME} ${ARGS_SOURCES})
-    set_link_options(${TESTNAME} DEPENDS ${ARGS_DEPENDS})
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER ${CMAKE_SOURCE_DIR}/tests)
-    add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
-endfunction()
-
 function(set_link_options TARGET_NAME)
     cmake_parse_arguments(ARGS "" "" "DEPENDS" ${ARGN})
     target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)

@@ -10,8 +10,3 @@ create_test(ExampleTest
         SOURCES ExampleTest.cpp
         ${CMAKE_SOURCE_DIR}/src/Example.cpp
         )
-
-create_qt_test(ExampleQtTest
-        SOURCES ExampleQtTest.cpp
-        DEPENDS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Test
-        )

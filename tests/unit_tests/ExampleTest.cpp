@@ -16,13 +16,3 @@ TEST_F(ExampleTest, test) {
     const auto expected_value{5};
     ASSERT_EQ(value, expected_value);
 }
-
-TEST_F(ExampleTest, anotherTest) {
-    // given
-    // when
-    auto value = example.get_number();
-
-    // then
-    const auto expected_value{5};
-    ASSERT_EQ(value, expected_value);
-}

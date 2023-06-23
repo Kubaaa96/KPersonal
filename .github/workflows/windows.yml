@@ -1,0 +1,59 @@
+name: Windows
+on: [ push, pull_request ]
+
+env:
+  REPO: template-cpp
+  GITHUB_REPO: Kubaaa96/template-cpp
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        CONFIG:
+          - {
+            BUILD_TYPE: Release
+          }
+          - {
+            BUILD_TYPE: Debug
+          }
+
+    steps:
+      - name: Install dependencies
+        run: pip install conan==1.59.0 gcovr
+
+      - name: Clone the git repo
+        uses: actions/checkout@v2
+        with:
+          path: project
+          fetch-depth: 50
+
+      - name: Create project build directory
+        working-directory: project
+        run: |
+          mkdir build
+
+      - name: Configure project
+        working-directory: project
+        run: 
+          cmake . -Bbuild
+            -G "Visual Studio 17 2022"
+            -A x64
+            -DCMAKE_BUILD_TYPE="${{ matrix.CONFIG.BUILD_TYPE }}"
+
+      - name: Build project
+        working-directory: project
+        run: cmake --build ./build --config ${{ matrix.CONFIG.BUILD_TYPE }}
+
+      - name: Run tests
+        working-directory: project/build
+        run: 
+          if ("${{ matrix.CONFIG.BUILD_TYPE }}" -eq "Debug") 
+          { 
+            cd tests;
+            ctest -C ${{ matrix.CONFIG.BUILD_TYPE }} --output-on-failure --timeout 540 } 
+          else 
+          { 
+            Write-host "No test on Release Build type"
+          }
